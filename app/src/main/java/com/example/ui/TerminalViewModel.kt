@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -223,23 +225,25 @@ class TerminalViewModel(application: Application) : AndroidViewModel(application
 
     private suspend fun executeLocalCommand(cmd: String) {
         _isLoading.value = true
-        val resultText = try {
-            val process = Runtime.getRuntime().exec(cmd)
-            val reader = BufferedReader(InputStreamReader(process.inputStream))
-            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
-            val output = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                output.append(line).append("\n")
+        val resultText = withContext(Dispatchers.IO) {
+            try {
+                val process = Runtime.getRuntime().exec(cmd)
+                val reader = BufferedReader(InputStreamReader(process.inputStream))
+                val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+                val output = StringBuilder()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    output.append(line).append("\n")
+                }
+                while (errorReader.readLine().also { line = it } != null) {
+                    output.append("[ERROR] ").append(line).append("\n")
+                }
+                process.waitFor()
+                val text = output.toString().trim()
+                if (text.isEmpty()) "[Sistem] Komut çalıştırıldı ancak çıktı üretmedi." else text
+            } catch (e: Exception) {
+                "Sistem hatası: Komut yürütülemedi. ${e.localizedMessage}"
             }
-            while (errorReader.readLine().also { line = it } != null) {
-                output.append("[ERROR] ").append(line).append("\n")
-            }
-            process.waitFor()
-            val text = output.toString().trim()
-            if (text.isEmpty()) "[Sistem] Komut çalıştırıldı ancak çıktı üretmedi." else text
-        } catch (e: Exception) {
-            "Sistem hatası: Komut yürütülemedi. ${e.localizedMessage}"
         }
         _isLoading.value = false
 
