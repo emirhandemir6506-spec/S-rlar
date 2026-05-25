@@ -23,7 +23,7 @@ data class TerminalLog(
 
 @Dao
 interface TerminalLogDao {
-    @Query("SELECT * FROM terminal_logs ORDER BY timestamp ASC")
+    @Query("SELECT * FROM (SELECT * FROM terminal_logs ORDER BY id DESC LIMIT 200) ORDER BY id ASC")
     fun getAllLogs(): Flow<List<TerminalLog>>
 
     @Insert

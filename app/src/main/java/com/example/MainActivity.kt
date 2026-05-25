@@ -107,7 +107,11 @@ fun TerminalScreen(
     // Automatically scroll to the end on new logs
     LaunchedEffect(logs.size) {
         if (logs.isNotEmpty()) {
-            lazyListState.animateScrollToItem(logs.size - 1)
+            try {
+                lazyListState.scrollToItem(logs.size - 1)
+            } catch (e: Exception) {
+                // Ignore safe fallback
+            }
         }
     }
 
