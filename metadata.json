@@ -1,0 +1,6 @@
+{
+  "name": "AI Terminal",
+  "description": "Android AI Terminal which supports Claude, OpenAI, Kimi AI and Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
